@@ -13,14 +13,24 @@ export default function App() {
       return;
     }
 
+    // Take files from state
+    // This opens the file select window!
     const formData = new FormData();
-    Array.from(files).forEach(file => formData.append('files', file));
+    Array.from(files).forEach((file, index) => {
+      formData.append(`file${index}`, file);
+    });
 
+    formData.append('fileCount', String(files.length));
+
+    // Post/Send commands always need to be in a try/except 
     try {
+
+      // Send to Backend via.... which address?
       const response = await fetch('/upload/modules', {
         method: 'POST',
         body: formData
       });
+      // Receive from backend
       const data = await response.json();
       setModules(data.modules || []);
       setIssues(data.issues || []);
@@ -31,19 +41,23 @@ export default function App() {
     }
   };
 
+  // Confusing syntax
+  // TODO how does this work?
   const updateModule = (index: number, field: keyof Module, value: string) => {
-    setModules(prev => prev.map((module, i) => 
+    setModules(prev => prev.map((module, i) =>
       i === index ? { ...module, [field]: value } : module
     ));
   };
 
   const generateQuestions = async () => {
     try {
+      // Send to backend
       const response = await fetch('/upload/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ modules })
+        body: JSON.stringify({ modules }) // Sends edited modules
       });
+      // Receive from backend
       const data = await response.json();
       setQuestions(data.questions || []);
     } catch (error) {
@@ -59,15 +73,17 @@ export default function App() {
       {/* Step 1: Upload Files */}
       <section style={{ margin: '1rem 0', padding: '1rem', border: '1px solid #ddd', borderRadius: 4 }}>
         <h2>1. Upload Module Files (.md)</h2>
-        <input 
-          type="file" 
-          multiple 
+        <input
+          type="file"
+          multiple
           accept=".md,text/markdown"
           onChange={e => setFiles(e.target.files)}
         />
+        {/* File upload happens here*/}
         <button onClick={uploadModules} style={{ marginLeft: 8 }}>
           Upload & Parse
         </button>
+        {/* ↑ User selects files → clicks button → uploadModules() runs → backend called */}
 
         {issues.length > 0 && (
           <div style={{ marginTop: 12, padding: 8, backgroundColor: '#fee', color: '#c00' }}>
@@ -90,24 +106,27 @@ export default function App() {
               </tr>
             </thead>
             <tbody>
+              {/* Section 2: Edit Table (only shows if modules.length > 0) */}
               {modules.map((module, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: 8 }}>
-                    <input 
+                    // Does this really auto update?
+                    <input
                       value={module.reference}
+                      // what is e?
                       onChange={e => updateModule(i, 'reference', e.target.value)}
                       style={{ width: '100%' }}
                     />
                   </td>
                   <td style={{ padding: 8 }}>
-                    <input 
+                    <input
                       value={module.title}
                       onChange={e => updateModule(i, 'title', e.target.value)}
                       style={{ width: '100%' }}
                     />
                   </td>
                   <td style={{ padding: 8 }}>
-                    <textarea 
+                    <textarea
                       value={module.description}
                       onChange={e => updateModule(i, 'description', e.target.value)}
                       rows={3}

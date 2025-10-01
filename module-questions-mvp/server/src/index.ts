@@ -15,17 +15,6 @@ app.use(
   })
 );
 
-// Test route
-app.get('/', (c) => {
-  return c.json({ 
-    message: 'Module Questions API is running!',
-    endpoints: {
-      'POST /upload/modules': 'Upload .md files and parse modules',
-      'POST /upload/questions': 'Generate questions from modules'
-    }
-  });
-});
-
 // We made a database scheme here???
 // oh we did make the schema, but we didn't make the database
 
@@ -84,23 +73,29 @@ function generateQuestions(modules: Module[]): Question[] {
 app.post("/upload/modules", async (c) => {
   try {
     const body = await c.req.parseBody();
-    const files = body.files;
 
-    // Handle both single file and file array
-    const fileArray = Array.isArray(files) ? files : [files].filter(Boolean);
+    const fileCount = parseInt(body.fileCount as string) || 0;
 
     const modules: Module[] = [];
     const issues: string[] = [];
     const seen = new Set<string>();
 
-    for (const file of fileArray) {
+    // Iterate through indexed files
+    for (let i = 0; i < fileCount; i++) {
+      const file = body[`file${i}`];
+
+      console.log(`Processing file${i}:`, file); // 🔍 Debug
+
       if (!(file instanceof File)) {
-        issues.push("Invalid file format");
+        issues.push(`file${i}: Invalid file format`);
         continue;
       }
 
       const text = await file.text();
+      console.log(`File ${i} content preview:`, text.substring(0, 100)); // 🔍 Debug
+
       const module = parseMarkdownToModule(text);
+      console.log(`Parsed module ${i}:`, module); // 🔍 Debug
 
       if (!module) {
         issues.push(
@@ -126,6 +121,7 @@ app.post("/upload/modules", async (c) => {
 
     return c.json({ modules, issues });
   } catch (error) {
+    console.error("Upload error:", error);
     return c.json({ error: "Failed to process files" }, 500);
   }
 });
@@ -150,7 +146,7 @@ app.post("/upload/questions", async (c) => {
 const port = Number(process.env.PORT) || 8787;
 
 // Use Hono's Node.js adapter to create actual HTTP server
-import { serve } from '@hono/node-server';
+import { serve } from "@hono/node-server";
 
 serve({
   fetch: app.fetch,
