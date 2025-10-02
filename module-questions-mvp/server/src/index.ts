@@ -3,6 +3,8 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
 import type { Module, Question } from "../../shared/types.ts";
+import { parseMarkdownToModule, generateQuestions } from "./mock/generators.js"; // ← Updated!
+import "./llm/config.js"; // Load LLM config on startup
 
 // The backend and cors?
 const app = new Hono();
@@ -23,48 +25,6 @@ const ModuleSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
 });
-
-// I don't understand the syntax here
-// Mock LLM functions - We'll implemnet the real thing later
-function parseMarkdownToModule(markdown: string): Module | null {
-  const refMatch = /Reference:\s*(.+)/i.exec(markdown);
-  const titleMatch = /Title:\s*(.+)/i.exec(markdown);
-  const descMatch = /Description:\s*([\s\S]+)/i.exec(markdown);
-
-  if (!refMatch || !titleMatch || !descMatch) return null;
-
-  return {
-    reference: refMatch[1].trim(),
-    title: titleMatch[1].trim(),
-    description: descMatch[1].trim().slice(0, 400),
-  };
-}
-
-function generateQuestions(modules: Module[]): Question[] {
-  return modules.flatMap((module) => [
-    {
-      id: uuid(),
-      type: "boolean" as const,
-      moduleReference: module.reference,
-      questionText: `Do you meet the prerequisites for ${module.title}?`,
-      weighting: 1,
-      yesLabel: "Yes",
-      noLabel: "No",
-    },
-    {
-      id: uuid(),
-      type: "scalar" as const,
-      moduleReference: module.reference,
-      questionText: `How interested are you in ${module.title}?`,
-      weighting: 1,
-      minValue: 1,
-      maxValue: 5,
-      increment: 1,
-      minLabel: "Low",
-      maxLabel: "High",
-    },
-  ]);
-}
 
 // TODO MAJOR: The idea here is we upload a pdf/md file, then parse it into three sections?
 // Is that our big picture goal?

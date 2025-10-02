@@ -1,0 +1,5 @@
+# imagine if we had two .gitignore s
+node_modules/
+dist/
+.env
+*.log

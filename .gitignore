@@ -2,3 +2,5 @@
 .DS_Store
 /module-questions-mvp/node_modules
 /module-questions-mvp/server/node_modules
+module-questions-mvp/server/.env
+

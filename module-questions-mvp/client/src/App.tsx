@@ -7,6 +7,7 @@ export default function App() {
   const [issues, setIssues] = useState<string[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
 
+  // This method prints to the backend's console, but there is not console.log!
   const uploadModules = async () => {
     if (!files || files.length === 0) {
       alert('Please select files first');
