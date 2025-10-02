@@ -3,7 +3,17 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
 import type { Module, Question } from "../../shared/types.ts";
-import { parseMarkdownToModule, generateQuestions } from "./mock/generators.js"; // ← Updated!
+
+// Both Mock and LLM functions
+import {
+  parseMarkdownToModule as parseMarkdownMock,
+  generateQuestions as generateQuestionsMock,
+} from "./mock/generators.js";
+import {
+  parseMarkdownToModuleLLM,
+  generateQuestionsLLM,
+} from "./llm/endpoints.js";
+
 import "./llm/config.js"; // Load LLM config on startup
 
 // The backend and cors?
@@ -44,7 +54,7 @@ app.post("/upload/modules", async (c) => {
     for (let i = 0; i < fileCount; i++) {
       const file = body[`file${i}`];
 
-      console.log(`Processing file${i}:`, file); // 🔍 Debug
+      // console.log(`Processing file${i}:`, file); // Debug
 
       if (!(file instanceof File)) {
         issues.push(`file${i}: Invalid file format`);
@@ -52,10 +62,14 @@ app.post("/upload/modules", async (c) => {
       }
 
       const text = await file.text();
-      console.log(`File ${i} content preview:`, text.substring(0, 100)); // 🔍 Debug
+      // console.log(`File ${i} content preview:`, text.substring(0, 100)); // Debug
 
-      const module = parseMarkdownToModule(text);
-      console.log(`Parsed module ${i}:`, module); // 🔍 Debug
+      // Try LLM first, fallback to mock
+      let module = await parseMarkdownToModuleLLM(text);
+      if (!module) {
+        module = parseMarkdownMock(text); // Fallback to regex parser
+      }
+      // console.log(`Parsed module ${i}:`, module); // Debug
 
       if (!module) {
         issues.push(
@@ -95,7 +109,11 @@ app.post("/upload/questions", async (c) => {
     if (!moduleValidation.success) {
       return c.json({ error: "Invalid modules data" }, 400);
     }
-    const questions = generateQuestions(moduleValidation.data);
+    // Try LLM first, fallback to mock
+    let questions = await generateQuestionsLLM(moduleValidation.data);
+    if (questions.length === 0) {
+      questions = generateQuestionsMock(moduleValidation.data); // Fallback
+    }
     return c.json({ questions });
   } catch (error) {
     return c.json({ error: "Failed to generate questions" }, 500);

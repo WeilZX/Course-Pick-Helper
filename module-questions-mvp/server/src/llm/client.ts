@@ -35,7 +35,7 @@ export async function callLLM<T>(
 
     //Extract text from response
     const textContent = message.content.find((c) => c.type === "text");
-    if (!textContent || textContent.type === "text") {
+    if (!textContent || textContent.type !== "text") {
       return {
         data: null,
         error: "No text content in LLM response",
@@ -50,7 +50,7 @@ export async function callLLM<T>(
       jsonData = JSON.parse(responseText);
     } catch (parseError) {
       // If not valid JSON, try to extract JSON from markdown code blocks
-      const jsonMatch = responseText.match(/'''json\s*([\s\S]*?)\s*```/);
+      const jsonMatch = responseText.match(/```json\s*([\s\S]*?)\s*```/);
       if (jsonMatch) {
         jsonData = JSON.parse(jsonMatch[1]);
       } else {

@@ -12,7 +12,7 @@ export const LLM_CONFIG = {
   model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514",
   useRealLLM: process.env.USE_REAL_LLM === "true",
   maxTokens: 4096,
-  temprature: 0.7, // 0 = deterministic, 1 = creative
+  temperature: 0.7, // 0 = deterministic, 1 = creative
 };
 
 // Validate configuration

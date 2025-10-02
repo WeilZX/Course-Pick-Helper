@@ -1,18 +1,25 @@
 import { useState } from 'react';
 import type { Module, Question } from '../../shared/types';
 
+
 export default function App() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
   const [issues, setIssues] = useState<string[]>([]);
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  // This method prints to the backend's console, but there is not console.log!
+  const [isUploading, setIsUploading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+
   const uploadModules = async () => {
     if (!files || files.length === 0) {
       alert('Please select files first');
       return;
     }
+
+    // start loading
+    setIsUploading(true);
 
     // Take files from state
     // This opens the file select window!
@@ -39,6 +46,9 @@ export default function App() {
     } catch (error) {
       alert('Failed to upload files');
       console.error(error);
+    } finally {
+      // Finish/stop loading
+      setIsUploading(false);
     }
   };
 
@@ -51,6 +61,10 @@ export default function App() {
   };
 
   const generateQuestions = async () => {
+
+    // Start loading - "Now you're working on generating the questions"
+    setIsGenerating(true);
+
     try {
       // Send to backend
       const response = await fetch('/upload/questions', {
@@ -64,6 +78,9 @@ export default function App() {
     } catch (error) {
       alert('Failed to generate questions');
       console.error(error);
+    } finally {
+      // Stop loading - "You're done generating"
+      setIsGenerating(false);
     }
   };
 
@@ -79,12 +96,33 @@ export default function App() {
           multiple
           accept=".md,text/markdown"
           onChange={e => setFiles(e.target.files)}
+          disabled={isUploading}
         />
         {/* File upload happens here*/}
-        <button onClick={uploadModules} style={{ marginLeft: 8 }}>
-          Upload & Parse
+        <button
+          onClick={uploadModules}
+          disabled={isUploading}
+          style={{
+            marginLeft: 8,
+            opacity: isUploading ? 0.6 : 1,
+            cursor: isUploading ? 'not-allowed' : 'pointer'
+          }}
+        >
+          {isUploading ? 'Processing with AI...' : 'Upload & Parse'}
         </button>
         {/* ↑ User selects files → clicks button → uploadModules() runs → backend called */}
+
+        {/* TODO consider adding 1 of n file count for files that have been processed */}
+        {isUploading && (
+          <div style={{ marginTop: 12, color: '#0066cc' }}>
+            <strong>AI is analyzing your files...</strong>
+            <br />
+            <small>This may take 5-10 seconds per file</small>
+          </div>
+        )}
+
+
+
 
         {issues.length > 0 && (
           <div style={{ marginTop: 12, padding: 8, backgroundColor: '#fee', color: '#c00' }}>
@@ -111,7 +149,6 @@ export default function App() {
               {modules.map((module, i) => (
                 <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
                   <td style={{ padding: 8 }}>
-                    // Does this really auto update?
                     <input
                       value={module.reference}
                       // what is e?
@@ -138,9 +175,25 @@ export default function App() {
               ))}
             </tbody>
           </table>
-          <button onClick={generateQuestions} style={{ marginTop: 12 }}>
-            Generate Questions
+          <button
+            onClick={generateQuestions}
+            disabled={isGenerating}
+            style={{
+              marginTop: 12,
+              opacity: isGenerating ? 0.6 : 1,
+              cursor: isGenerating ? 'not-allowed' : 'pointer'
+            }}
+          >
+            {isGenerating ? 'AI Generating Questions...' : 'Generate Questions'}
           </button>
+          
+          {isGenerating && (
+            <div style={{ marginTop: 12, color: '#0066cc' }}>
+              <strong>AI is creating personalized questions...</strong>
+              <br/>
+              <small>This may take 10-15 seconds</small>
+            </div>
+          )}
         </section>
       )}
 
