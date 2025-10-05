@@ -27,4 +27,15 @@ export type ScalarQuestion = BaseQuestion & {
   maxLabel?: string; // defaults to String(maxValue)
 };
 
+export type Answer = {
+  questionId: string;
+  value: boolean | number; // boolean for yes/no, number for scalar
+};
+
+export type AnswerSubmission = {
+  moduleReference: string;
+  answers: Answer[];
+};
+
+
 export type Question = BooleanQuestion | ScalarQuestion;

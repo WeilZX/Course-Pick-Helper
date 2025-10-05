@@ -1,42 +1,166 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+/* Layout */
+.app-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  font-family: sans-serif;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Section Cards */
+.section {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* Buttons */
+.button {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  background: white;
+  border-radius: 4px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.button:hover:not(:disabled) {
+  background: #f0f0f0;
 }
 
-.card {
-  padding: 2em;
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-.read-the-docs {
-  color: #888;
+.button-primary {
+  width: 100%;
+  padding: 1rem;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.button-spacing {
+  margin-left: 8px;
+}
+
+.button-top-spacing {
+  margin-top: 12px;
+}
+
+/* Loading & Messages */
+.loading-message {
+  margin-top: 12px;
+  color: #0066cc;
+}
+
+.loading-message small {
+  display: block;
+}
+
+.issues-box {
+  margin-top: 12px;
+  padding: 8px;
+  background-color: #fee;
+  color: #c00;
+}
+
+.progress-text {
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+/* Table */
+.module-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.module-table th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 2px solid #ccc;
+}
+
+.module-table td {
+  padding: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.module-table input,
+.module-table textarea {
+  width: 100%;
+}
+
+/* Module Card (for questionnaire) */
+.module-card {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  background-color: #fafafa;
+}
+
+.module-card h3 {
+  margin: 0 0 0.5rem 0;
+  color: #333;
+}
+
+.module-card-description {
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Question Card */
+.question-card {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.question-card.answered {
+  border-color: #4CAF50;
+}
+
+.question-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+
+.question-weight {
+  font-size: 0.8rem;
+  color: #999;
+  margin-left: 0.5rem;
+}
+
+/* Boolean Question */
+.boolean-options {
+  display: flex;
+  gap: 1rem;
+}
+
+.boolean-options label {
+  cursor: pointer;
+}
+
+/* Scalar Question */
+.scalar-slider {
+  width: 100%;
+}
+
+.scalar-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.scalar-value {
+  font-weight: bold;
+  color: #333;
 }
