@@ -164,3 +164,54 @@
   font-weight: bold;
   color: #333;
 }
+
+/* Results section */
+.result-card {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  background-color: white;
+}
+
+.result-score {
+  text-align: right;
+  min-width: 100px;
+  flex-shrink: 0;
+  margin-left: auto; /* Force to right side */
+}
+
+.result-info {
+  flex: 1;
+  min-width: 0; /* Prevents flex item from overflowing */
+}
+
+.result-card.top-rank {
+  background-color: #f0f8ff;
+  border-color: #4CAF50;
+}
+
+.result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+}
+
+.score-display {
+  text-align: right;
+  min-width: 100px;
+}
+
+.score-percentage {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4CAF50;
+  line-height: 1;
+  text-align: right; /* Add this if missing */
+}
+
+.score-details {
+  font-size: 0.8rem;
+  color: #999;
+}

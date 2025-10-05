@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { z } from "zod";
 import { v4 as uuid } from "uuid";
 import type { Module, Question } from "../../shared/types.ts";
+import { calculateAllScores } from "./scoring/calculator.ts";
 
 // Both Mock and LLM functions
 import {
@@ -120,11 +121,63 @@ app.post("/upload/questions", async (c) => {
   }
 });
 
+// What is c and why are we req,json()?
+app.post("/upload/calculate-scores", async (c) => {
+  try {
+    const body = await c.req.json();
+    console.log("Received scoring request:", {
+      modulesCount: body.modules?.length,
+      questionsCount: body.questions?.length,
+      answersCount: body.answers?.length,
+    });
+
+    const { modules, questions, answers } = body;
+
+    // Validate input
+    const modulesValidation = z.array(ModuleSchema).safeParse(modules);
+    if (!modulesValidation.success) {
+      console.error("Module validation failed:", modulesValidation.error);
+      return c.json({ error: "Invalid modules data" }, 400);
+    }
+
+    if (!Array.isArray(questions)) {
+      console.error("Questions is not an array:", typeof questions);
+      return c.json({ error: "Questions must be an array" }, 400);
+    }
+
+    if (!Array.isArray(answers)) {
+      console.error("Answers is not an array:", typeof answers);
+      return c.json({ error: "Answers must be an array" }, 400);
+    }
+
+    console.log("Calling calculateAllScores...");
+    const result = calculateAllScores(
+      modulesValidation.data,
+      questions,
+      answers
+    );
+
+    console.log("Scoring successful:", result);
+    return c.json(result);
+  } catch (error) {
+    console.error("Scoring error details:", error);
+    return c.json(
+      {
+        error: "Failed to calculate scores",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      500
+    );
+  }
+});
+
+// ALL ENDPOINTS MUST WRITTEN BEFORE THE SERVER STARTS
 // start server
 const port = Number(process.env.PORT) || 8787;
 
 // Use Hono's Node.js adapter to create actual HTTP server
 import { serve } from "@hono/node-server";
+// import Module from "module";
 
 serve({
   fetch: app.fetch,

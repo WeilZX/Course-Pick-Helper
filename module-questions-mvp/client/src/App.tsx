@@ -1,18 +1,27 @@
 import { useMemo, useState } from 'react';
-import type { Module, Question, Answer } from '../../shared/types';
-import './App.css'; // Add this import
+import type { Module, Question, Answer, ModuleScore } from '../../shared/types';
+import './App.css'; 
 
 
 
 export default function App() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [modules, setModules] = useState<Module[]>([]);
+
   const [issues, setIssues] = useState<string[]>([]);
+
   const [questions, setQuestions] = useState<Question[]>([]);
-  const [answers, setAnswers] = useState<Map<string, Answer['value']>>(new Map());
 
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+
+  const [answers, setAnswers] = useState<Map<string, Answer['value']>>(new Map());
+
+  const [scores, setScores] = useState<ModuleScore[]>([]);
+  const [rankedModules, setRankedModules] = useState<string[]>([]);
+  const [isCalculating, setIsCalculating] = useState(false);
+
+
 
   // Group questions by module reference
   const questionsByModule = useMemo(() => {
@@ -110,6 +119,38 @@ export default function App() {
     }
   };
 
+
+  // Add this function after generateQuestions:
+  const calculateScores = async () => {
+    setIsCalculating(true);
+
+    try {
+      // Convert Map to array of Answer objects
+      const answersArray = Array.from(answers.entries()).map(([questionId, value]) => ({
+        questionId,
+        value
+      }));
+
+      const response = await fetch('/upload/calculate-scores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          modules,
+          questions,
+          answers: answersArray
+        })
+      });
+
+      const data = await response.json();
+      setScores(data.scores || []);
+      setRankedModules(data.rankedModules || []);
+    } catch (error) {
+      alert('Failed to calculate scores');
+      console.error(error);
+    } finally {
+      setIsCalculating(false);
+    }
+  };
   return (
     <div className='app-container'>
       <h1>Module Question Generator</h1>
@@ -297,13 +338,70 @@ export default function App() {
           {allAnswered && (
             <button
               className="button button-primary"
-              onClick={() => alert('Calculate scores - next step!')}
+              onClick={calculateScores}
+              disabled={isCalculating}
             >
-              Calculate Module Rankings
+              {isCalculating ? 'Calculating Scores...' : 'Calculate Module Rankings'}
             </button>
           )}
         </section>
       )}
+
+      {/* Step 4: Results */}
+      {scores.length > 0 && (
+        <section className="section">
+          <h2>4. Module Rankings</h2>
+          <p className="progress-text">
+            Based on your answers, here are the modules ranked by fit:
+          </p>
+
+          <div>
+            {rankedModules.map((moduleRef, index) => {
+              const score = scores.find(s => s.moduleReference === moduleRef);
+              const module = modules.find(m => m.reference === moduleRef);
+
+              if (!score || !module) return null;
+
+              const rank = index + 1;
+
+              return (
+                <div
+                  key={moduleRef}
+                  style={{
+                    marginBottom: '1rem',
+                    padding: '1rem',
+                    border: '2px solid #ddd',
+                    borderRadius: 4,
+                    backgroundColor: rank <= 3 ? '#f0f8ff' : 'white',
+                    borderColor: rank === 1 ? '#4CAF50' : '#ddd'
+                  }}
+                >
+                  <div className='results-header'>
+                    <div className='result-info'>
+                      <h3>
+                        #{rank} - {module.reference}: {module.title}
+                      </h3>
+                      <p className='result-description'>
+                        {module.description.substring(0, 120)}
+                        {module.description.length > 120 ? '...' : ''}
+                      </p>
+                    </div>
+                    <div className='result-score'>
+                      <div className='score-percentage'>
+                        {score.score}%
+                      </div>
+                      <div className='score-details'>
+                        {score.answeredQuestions}/{score.totalQuestions} questions
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
     </div>
-  );
-}
+  )
+};
