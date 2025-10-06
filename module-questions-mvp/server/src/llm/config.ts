@@ -11,7 +11,7 @@ export const LLM_CONFIG = {
   apikey: process.env.ANTHROPIC_API_KEY || "",
   model: process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514",
   useRealLLM: process.env.USE_REAL_LLM === "true",
-  maxTokens: 4096,
+  w: 16384,
   temperature: 0.7, // 0 = deterministic, 1 = creative
 };
 

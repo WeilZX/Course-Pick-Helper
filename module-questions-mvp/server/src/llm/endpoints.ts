@@ -66,7 +66,7 @@ export async function parseMarkdownToModuleLLM(
       prompt,
       systemPrompt: SYSTEM_PROMPT,
       temperature: 0.3, // Low temperatur for consistent extraction
-      maxTokens: 500, // Small response
+      maxTokens: 2000, // Small response
     },
     ModuleSchema.nullable()
   );
@@ -98,7 +98,7 @@ export async function generateQuestionsLLM(
       prompt,
       systemPrompt: SYSTEM_PROMPT,
       temperature: 0.7, // Creative questions
-      maxTokens: 3000, // Larger response expected
+      maxTokens: 9000, // Larger response expected
     },
     z.array(QuestionSchema)
   );
